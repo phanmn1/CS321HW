@@ -1,0 +1,4 @@
+ExprStmt
+  Assign
+    "x"
+    Id("x")

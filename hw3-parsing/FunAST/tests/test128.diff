@@ -1,0 +1,4 @@
+1c1
+< Invalid syntax at (9,3), )
+---
+> Invalid syntax at (3,3), fact

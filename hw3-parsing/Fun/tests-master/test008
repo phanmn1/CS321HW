@@ -1,0 +1,45 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * test008                                                                     *
+ *                                                                             *
+ * Let's calculate binomial coefficients!                                      *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/*
+ * Test function.
+ */
+
+int main()
+{
+  if(factorial(4) != 24)
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+/*
+ * Calculates the factorial of the given (positive) integer.
+ */
+
+int factorial(int n)
+{
+  // Base case
+  if(n == 0 || n == 1)
+  {
+    return 1;
+  }
+
+  return n * factorial(n - 1);
+}
+
+/*
+ * Uses the factorial function to calculate binomial coefficients.
+ */
+
+int binomial(int n, int j)
+{
+  return factorial(n) / (factorial(j) * factorial(n - j));
+}

@@ -1,0 +1,14 @@
+If
+  Lt
+    Id("x")
+    Id("y")
+  If
+    Lt
+      Id("u")
+      Id("v")
+    Print
+      IntLit(1)
+    Print
+      IntLit(2)
+  Print
+    IntLit(3)

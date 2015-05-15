@@ -1,0 +1,4 @@
+1c1
+< Lexical error at line 5, column 10.  Encountered: "_" (95), after : ""
+---
+> Valid syntax

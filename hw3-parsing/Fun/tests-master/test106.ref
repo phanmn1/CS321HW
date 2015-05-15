@@ -1,0 +1,58 @@
+Globals
+  int
+  InitVarIntro
+    "c2ount"
+    IntLit(0)
+Function
+  int
+  "fact"
+  Formal
+    int
+    "n1"
+  Block
+    ExprStmt
+      Assign
+        "count"
+        Add
+          Id("c2o4u5sfnt")
+          IntLit(1)
+    If
+      Lt
+        Id("n124")
+        IntLit(1)
+      Return
+        IntLit(1)
+      Return
+        Mul
+          Id("n999")
+          Call
+            "fact"
+            Sub
+              Id("n666")
+              IntLit(1)
+Globals
+  int
+  InitVarIntro
+    "x"
+    Id("y4")
+Globals
+  int
+  InitVarIntro
+    "y"
+    IntLit(1)
+Function
+  void
+  "main"
+  Block
+    Print
+      Call
+        "fact"
+        IntLit(7)
+    Print
+      Call
+        "fact"
+        IntLit(3)
+    Print
+      Call
+        "fact"
+        Id("count")

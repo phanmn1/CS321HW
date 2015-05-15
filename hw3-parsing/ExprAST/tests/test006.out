@@ -1,0 +1,5 @@
+Add
+  IntLit(1)
+  Mul
+    IntLit(2)
+    IntLit(3)

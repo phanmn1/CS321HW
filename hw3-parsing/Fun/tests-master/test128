@@ -1,0 +1,21 @@
+int fact(int n, boolean y) {
+// is your recursion working correctly? how about those people who used a list?
+  fact(y)y);
+// Again this was the result of finding a bug while commenting my code, so
+// there are a couple more of these weird paramter outside their place
+  count = count + 1;
+  if (n<1)
+    return 1;
+  else
+    return n * fact(n-1, z);
+}
+
+int x = y;
+int y = 1;
+
+void main(boolean f, boolean z, int y) {
+  print fact(7,3);
+  print fact(x,6,r,parsingIsFun);
+  print fact(count,isItThough);
+}
+

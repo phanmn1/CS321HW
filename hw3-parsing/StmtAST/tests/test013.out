@@ -1,0 +1,7 @@
+If
+  Lt
+    Id("x")
+    Id("y")
+  Print
+    IntLit(1)
+[no else branch]

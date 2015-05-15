@@ -1,0 +1,36 @@
+1,33c1
+< Globals
+<   int
+<   InitVarIntro
+<     "global"
+<     Call
+<       "foo"
+< Function
+<   int
+<   "foo"
+<   Formal
+<     int
+<     "num"
+<   Formal
+<     boolean
+<     "hah"
+<   Block
+<     Empty
+<     Print
+<       Call
+<         "test"
+<         Id("blah")
+<         Id("blah")
+<         Id("blah")
+<     Return
+<       Call
+<         "bar"
+<         Add
+<           Call
+<             "foo"
+<             Id("num")
+<           Mul
+<             IntLit(4)
+<             IntLit(7)
+---
+> Invalid syntax at (17,2), (

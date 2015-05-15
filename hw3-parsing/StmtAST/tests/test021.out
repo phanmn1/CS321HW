@@ -1,0 +1,7 @@
+Block
+  Print
+    Id("x")
+  Print
+    Id("y")
+  Print
+    Id("z")

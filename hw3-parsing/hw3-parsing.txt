@@ -1,0 +1,704 @@
+------------------------------------------------------------------------
+CS 321 Languages and Compiler Design I, Winter 2015
+
+Assignment 3: "Parsing" (Combined with AST)
+------------------------------------------------------------------------
+HEADS UP!
+
+1) Familiar advice, easily dismissed, but still highly relevant: This is
+a substantial programming assignment and it will probably seem
+overwhelming at first glance.  But you can do this if you make sure that
+you have enough time to work on it.  Start early, and ask for help
+if/when you get stuck!
+
+2) An important reminder about academic integrity: Although you are
+welcome to discuss the assignment with your classmates, the solutions
+that you submit must be your own, independent work, and should not be
+the result of direct collaborative development with or copying from
+another person.  Out of fairness to those students who observe this
+requirement, we will be checking for instances of students who do not.
+Any violations of academic integrity policies will be handled in the
+manner described in the course syllabus.  If you find yourself in a
+position where you feel tempted to do something that may violate the
+academic integrity policies---for example, because you think that
+looking at another student's solution may help you to figure out what is
+required---then stop and remember that you can ask the instructor or TA
+for help instead without risking a violation.
+
+3) If there are typos or details in this document that need to be
+clarified, please let me know and I will do my best to fix them as
+quickly as possible.  If necessary, I will be happy to add new test
+cases to the ones that are already provided.
+
+------------------------------------------------------------------------
+SCHEDULE AND GRADING:
+
+This assignment is due at 1pm on Monday, February 23.  You will be
+expected to submit your Parser.jj file from the FunAST stage for grading
+via a dropbox on D2L.  (Details of what this means will be much clearer
+(I hope!) once you have read the description of the assignment below.)
+
+Grading for this assignment will be mostly performed by automated
+testing, although some points will be reserved for aesthetic judgements
+on the quality of your code (e.g, appropriate commenting, structure,
+presentation; avoiding unnecessary code duplication; etc.)
+
+In total, this assignment will contribute up to 15% towards your final
+grade for the class.  To satisfy the minimum passing score requirement
+for this assignment (i.e., to avoid a default F or X grade), your parser
+must accept at least one test case as a valid input.
+
+------------------------------------------------------------------------
+ACCOMPANYING MATERIALS:
+-----------------------
+This assignment is intended to be used in conjunction with a set of
+materials that can be downloaded from the course D2L site as either a
+zip file (hw3-parsing.zip) or a gzipped tar file (hw3-parsing.tar.gz).
+
+You can unpack the contents of the .tar.gz file by using the command:
+
+  tar xvzf hw3-parsing.tar.gz
+
+This will create a new folder called hw3-parsing that contains all of
+the materials for this assignment (including a copy of this document).
+
+If you prefer to use the .zip file, you can unpack that instead by
+using:
+
+  unzip hw3-parsing.zip
+
+In this case, however, you may need to modify the permission settings
+for the runTests and showTests scripts before they will work properly.
+To do this, try the following commands once you have unpacked the zip
+file.
+
+  cd hw3-parsing
+  chmod 755 runTests showTests
+
+Note that these script files are designed to run on Unix machines; you
+should still be able to do this assignment on a Windows computer (so
+long as you have installed a copy of JavaCC already), but you may not
+be able to use the runTests and showTests files as provided.  For this
+reason, I encourage you to do your development work on the Linuxlab
+computers (or on a Mac) if possible.
+
+------------------------------------------------------------------------
+INSTRUCTIONS:
+
+Your goal in this assignment is to construct a lexical analyzer and
+parser for a simple but realistic language (a significant component in
+meeting Course Objective 11).  In the process, you will also "apply
+mechanisms for defining the lexical structure of a programming language"
+(Objective 2); "use context-free grammars to define the syntax of a
+programming language" (Objective 3); apply mechanisms for transforming
+grammars to make them suitable for predictive parsing (Objective 4); and
+construct abstract syntax trees for programs in a simple language
+(Objective 6).  Note that you will be expected to use the lexical
+analyzer and parser that you develop for this assignment as a basis for
+the future assignment to build a type-checker (the remaining part of
+Objective 11), so it is important that you complete this task.
+
+To provide some structure, we have broken the work down in to nine
+steps, as illustrated in the following diagram:
+
+    Tokens -->  Expr   -->  Assign   -->  Stmt   -->  Fun
+                 |            |            |           |
+                 |            |            |           |
+                 V            V            V           V
+               ExprAST --> AssignAST --> StmtAST --> FunAST
+
+As you move from left to right along the top row in this diagram, you
+will be expanding the grammar for the programming language and building
+a simple checker that can detect syntax errors in input programs.  As
+you move down the diagram, you will be adding code to construct abstract
+syntax tree (AST) data structures that can be passed on to subsequent
+compiler or interpreter phases.
+
+As the diagram indicates, your ultimate target is "FunAST" in the lower
+right hand corner.  Unless you have significant prior experience,
+however, we suggest that you begin with "Tokens" on the top left, and
+then work your way across the diagram, only moving on from one version
+when your parser can pass all of the associated tests.  Even though it
+may look like more work at first glance, we expect that most students
+will find that the overall task is easier if they work through all nine
+steps in this way.  One recommended approach, after completing "Tokens",
+would be to work through the remaining options in columns, tackling
+"Expr" and then "ExprAST" before moving on to "Assign" and "AssignAST",
+and so on.  Of course, significant amounts of the work that you do at
+each stage can (and should!) be reused in later steps.  For example, you
+will be able to make a good start on a solution to AssignAST by merging
+parts of your solutions to ExprAST and Assign.
+
+At the end of the exercise, however, we will only expect you to provide
+your code for the final version, FunAST.  As such, you may choose to
+approach this exercise without going through all of the intermediate
+steps.  If you choose this option, however, then you will not be able to
+take advantage of all the testing infrastructure that is provided, and
+our ability to help if you get stuck will be much more limited.  Note
+also that the exercises from earlier CS321 labs are highly relevant to
+this assignment, and that you have previously been given time, in lieu
+of a graded homework, to review Lab 3 and to complete Lab 4.  To
+summarize this in different terms, this may be one of those times where
+going what looks like "the long way round" may actually be one of the
+best ways to shortcut the task!
+
+Materials to support your work at each step---including a JavaCC
+template, a Makefile, and a set of test files---are provided in a
+correspondingly named directory in the materials for this assignment.
+The typical workflow at each step will look something like the
+following, where STEPNAME is the name of one of the nine steps listed
+above:
+
+  $ cd STEPNAME
+
+  $ cp Template.jj Parser.jj
+
+  ... Edit the file Parser.jj to implement the
+  ... features that are required for STEPNAME.
+
+  $ make            # generates and compiles Parser.jj
+
+  ... Check for any errors that are reported, fixing
+  ... them and repeating the make command as needed.
+
+  $ java Parser
+
+  ... Try some simple examples first.  Type your input and then
+  ... hit ^D (once only) at the start of a line when you are done.
+  ... Check that any output you see is what you expect ... and if
+  ... not, then go back to fix it!
+
+  $ ../runTests     # Runs your program on all of the tests that have
+		    # been provided for STEPNAME.  These test are stored
+		    # in files with names of the form tests/testNNN
+		    # where NNN is a three digit number and tests is a
+		    # subdirectory of the STEPNAME folder.  The same
+		    # folder also contains a file tests/testNNN.ref
+		    # containing output from a working implementation,
+		    # which therefore serves as a reference for your
+		    # work.  The runTests command will print "PASSED"
+		    # for each test where your program generates the
+		    # expected output, or "FAILED" if the output
+                    # differs.
+
+  $ ../showTests    # Displays the results of the last runTests command
+		    # without running the tests again from scratch. For
+		    # each test case, showTests displays the original
+		    # input text, the reference output, and, if your
+		    # program is not producing the intended output, then
+		    # it will also print the output from a diff command
+		    # to show how they differ.  If you prefer, you may
+		    # access these results individually.  The output
+		    # that your program produces for tests/testNNN is
+		    # stored in tests/testNNN.out, and the results of
+		    # running diff are stored in tests/testNNN.diff.
+		    # Note that this last file will be empty in cases
+		    # where your program is producing the same output as
+		    # the reference implementation.
+
+Note that passing all of the tests does not necessarily imply that your
+solution is completely correct.  Nor should you take this automated
+process as an indication that you can skip reading and checking the
+generated outputs for yourself by hand.  Nevertheless, passing all of
+the tests should give you some confidence either to move on to the next
+step, or to try making up and running some more tests of your own.
+(Note that we only provide one test for the versions in the final
+column, Fun/FunAST, so you will probably need to spend time developing
+test cases of your own for those steps.)
+
+------------------------------------------------------------------------
+The lexer and parser that you will be implementing for this assignment
+will handle programs in a simple, conventional imperative programming
+language.  The following listing shows an example of one (syntactically)
+valid program that is written in this language.  But this example does
+not attempt to include every feature or even to specify the intended
+semantics for programs written in this language; the question of whether
+a program like this should pass static/semantic analysis is a matter for
+another day (or, more accurately, another assignment)!
+
+  int count = 0;
+  
+  int fact(int n) {
+    count = count + 1;
+    if (n<1)
+      return 1;
+    else
+      return n * fact(n-1);
+  }
+  
+  int x = y;
+  int y = 1;
+  
+  void main() {
+    print fact(7);
+    print fact(3);
+    print fact(count);
+  }
+
+Your first task is to pick a name for this language, and to describe why
+you have chosen that name.  Respectful choices only, please!  Of course
+you don't have to do this, and you won't be graded on your choice of
+name or your rationale.  Nevertheless, you are going to be spending a
+fair bit of time with this language, so why not give it a name!  Who
+knows, it might even be fun, and a way to inject a little of your own
+personality in to the project :-)  Not knowing what name you might pick,
+however, I will use the name YOURLANG as a placeholder in the rest of
+this document.  I certainly hope you can come up with a better name!
+
+------------------------------------------------------------------------
+Tokens:
+-------
+Now we will begin walking through each of the nine versions introduced
+above, providing some brief notes and hints as necessary in each case.
+We start, following the earlier advice, with "Tokens" in the top left.
+
+Your goal in this step is to build a basic lexical analyzer that can
+recognize identifier and integer literal tokens.  Variable names in
+YOURLANG are written as simple identifiers (starting with an alphabetic
+character (i.e., a-z), either upper or lower case, followed by a
+sequence of zero or more alphanumeric characters (i.e., either letters
+or digits 0-9).  Integer literals are written using a sequence of digits
+and are always interpreted in decimal notation.  (For example: 10, 010,
+and 0010, are all interpreted as representing the number ten.)  Spaces,
+tabs, new lines and carriage returns are treated as whitespace and can
+be used to separate or arrange lexemes (using indentation, for example)
+as appropriate.  C++/Java-style comments are supported, including both
+one line comments (introduced by "//") and non-nesting, bracketed
+comments (that begin with "/*" and then end at the first "*/").
+
+Note that you shouldn't need to define token codes for simple keywords,
+operator symbols, or punctuation because you'll be able to define these
+later.
+
+You will find that the Template.jj provided in this directory is fairly
+complete.  For the purposes of testing, we have provided a parser that
+looks for inputs consisting of what looks a little like a function call.
+But there is no deep significance in that choice: it's just something
+that we can use to get the testing process started.
+
+------------------------------------------------------------------------
+Expr:
+-----
+Your goal at this step is to build a syntax checker for a simple
+language of expressions.  You will need to construct an unambiguous
+grammar, suitable for top-down parsing, that reflects the intended order
+or operations.  The fixities of the operators that you will need to deal
+with here are shown in the following table, from lowest precedence (at
+the top of the list) to highest (at the bottom):
+
+   ||                    Logical or, groups to the right
+   &&                    Logical and, groups to the right
+   <, <=, >, >=, ==, !=  Comparison operators, nonassociative
+   +, -                  Additive operators, group to the left   <<<<<<
+   *, /                  Multiplicative operators, group to the left
+   parentheses           Used to specify explicit order of operations
+
+In addition to these operators, you should allow the use of integer
+literals and identifiers within expressions.
+
+To get things working at this step, assuming that you start from the
+Template.jj that is provided, you will need to copy your lexical rules
+across from "Tokens" and then add some new parser functions
+corresponding to your grammar.  Although it isn't strictly required,
+you are encouraged to start by writing out the grammar first before
+you try adapting it to fit the notation of JavaCC.
+
+It will be a little hard for you to confirm that you have implemented
+all of the required fixities correctly at this step.  For example, your
+parser should accept (x + y + z), but you won't be able to tell from
+the output that is produced at this stage whether it was parsed as
+((x + y) + z) or (x + (y + z)).  With that in mind, be prepared to
+come back to this step if you discover later on that your grammar
+does not assign the intended fixities.
+
+------------------------------------------------------------------------
+ExprAST:
+--------
+At this step, you will want to change the parser functions that you have
+developed so that they construct and return asbtract syntax tree
+structures instead of being declared with "void" as return type.
+
+To help you in this task, we have provided a set of class definitions in
+the "ast" folder, with one class for each different form of expression.
+The following diagram shows the inheritance relationship between these
+classes.  For example, you can see that IntLit, Id, and BinExpr are all
+subclasses of Expr, which means that each of them represents a different
+kind of expression.  This diagram includes a StmtExpr class and two
+subclasses (Assign and Call) that are not used at this stage; these
+forms of expression, representing assignments and function calls,
+respectively---will be introduced in later steps.
+
+  Expr --+-- Id
+         |
+         +-- IntLit
+         |
+         +-- StmtExpr --+-- Assign                    "lhs = rhs"
+         |              |
+         |              +-- Call                      "name (args)"
+         |
+         +-- BinExpr ---+-- ArithBinExpr --+-- Add    "left + right"
+                        |                  |
+                        |                  +-- Sub    "left - right"
+                        |                  |
+                        |                  +-- Mul    "left * right"
+                        |                  |
+                        |                  +-- Div    "left / right"
+                        |
+                        +-- RelBinExpr ----+-- Lt     "left < right"
+                        |                  |
+                        |                  +-- Lte    "left <= right"
+                        |                  |
+                        |                  +-- Gt     "left > right"
+                        |                  |
+                        |                  +-- Gte    "left >= right"
+                        |                  |
+                        |                  +-- Eql    "left == right"
+                        |                  |
+                        |                  +-- Neq    "left != right"
+                        |
+                        +-- LogBinExpr ----+-- LAnd   "left && right"
+                                           |
+                                           +-- LOr    "left || right"
+
+
+The annotations between double quotes on the right side of the diagram
+show the expected concrete syntax for each of these different forms of
+expression.
+
+One of the common features of binary expressions is that they all have
+both a left and a right operand.  For this reason, all of the classes
+corresonding to these kinds of expression are grouped together as
+subclasses of a common, BinExpr class.  In fact, we further divide the
+set of binary expressions in to three distinct families: those with
+arithmetic operators (+, -, *, and /) that are represented by subclasses
+of ArithBinExpr; those with relational operators (<. <=, >, >=, ==, and
+!=), represented by subclasses of RelBinExpr; and those with logical
+connectives (&& and ||) that are represented by subclasses of
+LogBinExpr.
+
+To get started on this step, copy across your lexical rules and parsing
+functions from "Expr" into the provided template, and then start editing
+the parser functions to construct and return abstract syntax tree
+values.  Once you start running the resulting Parser, you should see
+that it generates output that uses indentation to show the structure of
+the abstract syntax trees that your parser has constructed.  This is the
+point at which you might start to see whether your "Expr" parser has
+been using the intended fixities (or not :-)!
+
+------------------------------------------------------------------------
+Assign:
+-------
+At this step we are back to building a simple syntax checker, but we are
+adding in one new form of expression: assignments, which are written as
+expressions of the form var = expr.
+
+This might seem like a very simple step compated with the work that you
+did for, say, "Expr", but there is one complication: when your parser is
+trying to find an expression and it sees an input beginning with an
+identifier name like "i", how will it know whether to treat that as, for
+example, the start of an assignment expression like "i = 2" or an
+addition expression like "i + 2"?  The answer, of course, is that your
+parser will need to use some LOOKAHEAD.  You'll find some useful
+guidance on this in Step 21 of Lab 3.  Or, if you want to go to the
+official source, try https://javacc.java.net/doc/lookahead.html but be
+aware that there's a lot more information on that page than you need for
+this exercise.
+
+Note that assignment expressions should have the lowest precedence
+(lower than ||, for example, in "Expr") and should group to the right.
+This means that an input like "i = j = k + 1" will be treated in the
+same way as "i = (j = (k+1))".
+
+------------------------------------------------------------------------
+AssignAST:
+----------
+Once you have completed "ExprAST" and "Assign", this step should be
+fairly straightforward; a new Assign class has been added in the "ast"
+folder, so you'll probably want to use that when you build an abstract
+syntax tree for an assignment expression!
+
+------------------------------------------------------------------------
+Stmt:
+-----
+Back to syntax checking, but now we're going to extend the language with
+support for various forms of statement:
+
+- Empty statements, written as ";".
+
+- Blocks, which group zero or more statements together as a single
+  statement enclosed in braces, as in "{ stmt1 ... stmtn }".
+
+- If statements of the form "if (test) ifTrue [else ifFalse]".  The
+  square brackets around the "else" branch here indicate that this is
+  optional.
+
+- While loops of the form "while (test) body".
+
+- Print statements of the form "print exp;".  Note that it is not
+  necessary to wrap the argument in parentheses, but that a semicolon is
+  required at the end of the statement.
+
+- Return statements of the form "return [exp];".  Again, the square
+  brackets indicate that the expression, used to provide a return value,
+  is optional, but the trailing semicolon is always required.
+
+- Expressions statements, written as "expr;".  Only certain kinds
+  of expression---specifically, assignments and function calls---can be
+  used as expression statements because these are the only kinds of
+  expression that can have a side effect.  By comparison, there is no
+  useful purpose in allowing expressions like 2 + 3 that are side-effect
+  free to be used as statements.  This fact may cause you to go back and
+  rewrite parts of your "Assign" grammar so that you don't have to
+  unnecessarily duplicate code in Parser.jj ...
+
+- Local variable declarations, which are written as a type name
+  followed by a sequence of "variable introductions".  You'll see that
+  the Template specifies just two types that are represented by the
+  keywords "int" and "boolean".  As for the variable introductions,
+  these should be comma separated lists of variable names, each of which
+  can optionally specify an initial value by writing an "=" sign
+  followed by an expression immediately after the variable name.
+
+Be sure to consult the test cases that are provided in the tests
+subdirectory for more examples of concrete syntax.  And note that the
+parser that is described by the Template expects a single statement as
+its input.  As such, if you want to try it out with more than one
+statement, then you will need to put those statements together inside
+braces, { ... }, to form a Block.
+
+One tricky detail to look out for here has to do with those optional
+"else" clauses in "if" statements.  In fact, the standard way of writing
+a grammar for a language like this leads to ambiguity.  If we write a
+statement like this:
+
+  if (x<y) if (y<z) print 1; else print 2;
+
+then it is reasonable to wonder whether this should be treated as
+suggested by the following indentation:
+
+  if (x<y)
+      if (y<z)
+          print 1;
+      else
+          print 2;
+
+or instead by the following alternative:
+
+  if (x<y)
+      if (y<z)
+          print 1;
+  else
+      print 2;
+
+This is actually a classic problem in parsing that is referred to as the
+"dangling else" because the "else" portion of the input is left
+"dangling" and could, in theory, be attached to either one of the two
+"if"s.  But in practice, most people would agree that the first of the
+two approaches shown here is the right way to proceed.  Or to put it
+another way, that any dangling "else" should attach to the closest "if".
+So we know how we want our parser to handle this, but what can we do to
+make sure that is what it does?
+
+A natural way to write a JavaCC parsing function for this part of the
+grammar would be to use something like the following, using a trailing
+"?" operator to indicate that the "else" clause is optional:
+
+   ("else" Stmt())?
+
+But what should the parser do if it reaches the start of this production
+and the next token is an "else" keyword?  One option is to step inside
+the parentheses, skip over the "else" and then parse whatever statement
+comes next; this will resolve our "dangling else" problem in the way we
+want.  Unfortunately, however, JavaCC will also detect another option:
+"else" is also in the FOLLOW set of ("else" Stmt())?, so the parser
+might instead decide to skip the optional (...)? construct and then
+carry on with the "else" token and whatever input comes next.
+Fortunately, JavaCC will resolve this conflict by following the first
+option, which is what we want.  But that won't stop it from complaining
+about a "Choice conflict".  Happily, we can tell JavaCC not to worry
+about this by inserting a dummy LOOKAHEAD annotation in the grammar, as
+follows:
+
+   (LOOKAHEAD(1) "else" Stmt())?
+
+This doesn't really change anything of substance (JavaCC is already
+using a Lookahead of 1 by default), but it will interpret this
+annotation as an indication that the user is confident about what they
+are doing (you are, right? :-) and so it will no longer produce the
+error message.
+
+I hope the discussion of the "dangling else" is clear enough, but if you
+want more, you can see some additional comments about this in the JavaCC
+minitutorial on lookahead that I mentioned previously.
+
+------------------------------------------------------------------------
+StmtAST:
+--------
+At this step, we switch back to building abstract syntax trees.  And
+once again, some extra classes have been added to the "ast" folder to
+help with this task.  The new classes are shown in the following
+diagram:
+
+  Stmt* --+-- Empty                      ";"
+          |
+          +-- Block                      "{ stmt1 ... stmtn }"
+          |
+          +-- If                         "if (test) ifTrue [else ifFalse]"
+          |
+          +-- While                      "while (test) body"
+          |
+          +-- Print                      "print exp;"
+          |
+          +-- Return                     "return [exp];"
+          |
+          +-- InitStmt* --+-- ExprStmt   "expr;"
+                          |
+                          +-- Locals     "type varintros;"
+
+There is also a new class called Type (and two values of that type
+called Type.INT and Type.BOOLEAN that correspond to the "int" and
+"boolean" types, respectively).
+
+In addition, there are classes called VarIntro and InitVarIntro that
+correspond to the constructs that are used to introduce local variables.
+As an example, suppose that we wanted to build the abstract syntax tree
+for a local variable declaration like "int x, y=1;".  If we weren't
+doing this in the context of a parser, we could build this directly
+using the following Java Code:
+
+    VarIntro introX = new VarIntro("x");   // to introduce x
+
+    InitVarIntro introY
+      = new InitVarIntro("y",              // specifies variable name
+                         new IntLit(1));   // and initial value expr.
+
+    VarIntro[] intros                      // group them together in
+      = new VarIntro[] {introX, introY };  // an array
+
+    Stmt decl = new Locals(Type.INT,       // declaring "int" vars
+                            intros);       // ... called x and y!
+
+This probably looks a little bit complicated!  In particular, how can
+the parser construct an array like this?  For inspiration on this, you
+might want to go back to Example 08 from Lab 3, where we wrote a program
+that constructs an array as abstract syntax for a sequence of numbers.
+The trick in that example was to use a recursive function with a
+parameter called "soFar" that captures the number of elements that have
+been read up to that point, and then uses this information to build and
+populate an appropriately sized array.  For more about how this can be
+done in JavaCC, be sure to look at the Template.jj file that is provided
+in the StmtAST directory because you will see that the same trick is
+used to capture the list of statements that appear inside a Block as an
+array.  Study that example carefully, and you should be able to see how
+it can be adapted to handle the VarIntro case described above too.
+Figuring this out is worth the investment because you will find two
+further examples where this kind of approach is needed in FunAST!
+
+A final note has to do with "missing" components: What should the AST
+for an "if" statement without an "else" branch look like?  Or what
+should the AST for a "return" statement be if there is no expression to
+specify a return value?  Although it is a somewhat questionable design,
+we'll take the easy option for now and use null in place of the missing
+components.  This means, for example, that we can build an AST for
+"return;" by using new Return(null) in our the Java code.
+
+------------------------------------------------------------------------
+Fun:
+----
+In this final stage of implementing a syntax checker, we're going to add
+support for recognizing complete programs that are written as sequences
+of global variable and function definitions.  It has been a long time,
+so you might have forgotten, but we saw an example of such a program
+earlier in this document before we began diving in to the details!
+
+There are two things to deal with at this stage.  First, you need to add
+parsing functions that can recognize a program as a sequence of
+definitions.  The concrete syntax for global variable declarations is
+exactly the same as for local variable declarations, so that should be
+straightforward.  The concrete syntax for function definitions can be
+summarized as follows:
+
+   retType name(formals) body
+
+where:
+
+- "retType" is either a type or "void", the latter indicating that
+  the function is not expected to return a value.
+
+- "name" is an identifier that names the function.
+
+- "formals" is a list of zero or more formal parameters, separarated
+  from one another by commas.  Each formal parameter takes the form
+  "type varname" and specifies the type and name of an input to the
+  function.
+
+- "body" is a statment block; that is, a sequence of statements,
+  enclosed in braces.
+
+Once you have extended your grammar to support function definitions, you
+will want to provide some way for those functions to be used! As normal,
+we will write function calls using syntax of the form "name(args)" where
+"name" is an identifier that specifies a function name, and "args" is a
+comma-separated list of zero or more expressions that will be used as
+the "actual arguments" for the function.
+
+Note that it should be possible for function calls to appear in
+expressions and statements.  As such, you will probably want to define a
+parsing function for reading function calls, and then insert one
+reference to that function in your grammar for expressions, and another
+in your grammar for statements.  Don't be surprised if this requires the
+use of additional LOOKAHEAD annotations.  After all, how will your
+parser be able to determine whether a statement that begins with an
+identifier "f" is actually the start of a function call, "f(1,2,3);", or
+of an assignment, "f = 1 + 2 + 3;" unless it does some lookahead?
+
+You might even need more lookahead than this in one other spot.  After
+all, the start of a global variable declaration "int x=1;" looks quite
+a lot like the start of a function definition "int x() { return 1; }"!
+
+At this point, you might also be asking yourself some questions along
+the following lines:
+
+- If the parser reads an input like "f(x,y)", how can it tell if "f" is
+  a valid function name?  If "f" is supposed to have two parameters?  if
+  "x" and "y" are of the right type to be used as parameters for "f"?
+
+- If the parser is looking at the definition of a "void" function,
+  what should it do to make sure that the body of that function doesn't
+  actually try to return a value?
+
+Fear not!  Checking for conditions like these is not part of the work
+that the parser is expected to do.  So long as the input is
+syntactically well formed, the parser should accept it.  Static analysis
+will have some work to do here, but that's going to be a whole new
+homework assignment!
+
+------------------------------------------------------------------------
+FunAST:
+-------
+Welcome, bold traveller, you have reached the end of your journey!
+
+Well, almost.  There is still this one last step to complete :-)
+
+As you have probably come to expect from an AST step, there are a
+few more additions to the "ast" folder, this time for classes
+representing global variable definitions (Globals) and function
+definitions (Function), with a common subclass, Defn.
+
+  Defn* --+-- Globals
+          |
+          +-- Function
+
+The result of parsing a complete program will be an array of Defn
+values, represented by the type Defn[] in Java syntax.
+
+There is also a new class called Formal that can be used to capture
+the formal parameters in a function definition.
+
+There are one or two small details that you will need to work out
+to complete this step, but mostly they are just reusing ideas or
+techniques that you have already seen ...
+
+Good luck, and once you have completed the journey, congratulations!
+
+------------------------------------------------------------------------

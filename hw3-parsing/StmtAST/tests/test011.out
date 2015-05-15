@@ -1,0 +1,8 @@
+While
+  Lt
+    Id("x")
+    Id("y")
+  ExprStmt
+    Assign
+      "x"
+      Id("y")

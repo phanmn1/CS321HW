@@ -1,0 +1,27 @@
+While
+  Lt
+    Id("x")
+    Id("y")
+  Block
+    ExprStmt
+      Assign
+        "y"
+        Sub
+          Id("y")
+          IntLit(1)
+    While
+      Lt
+        Id("x")
+        Id("y")
+      ExprStmt
+        Assign
+          "x"
+          Add
+            Id("x")
+            IntLit(1)
+    ExprStmt
+      Assign
+        "x"
+        Add
+          Id("x")
+          IntLit(1)

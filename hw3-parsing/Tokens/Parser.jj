@@ -1,0 +1,52 @@
+PARSER_BEGIN(Parser)
+
+public class Parser {
+  public static void main(String[] args) {
+     new Parser(System.in);
+     try {
+       Top();
+       System.out.println("Valid syntax");
+     } catch (ParseException e) {
+       System.out.println("Invalid syntax at ("
+                          + token.beginColumn + ","
+                          + token.beginLine + "), "
+                          + token.image);
+     } catch (TokenMgrError e) {
+       System.out.println(e.getMessage());
+     }
+  }
+}
+PARSER_END(Parser)
+
+//- Parser Functions --------------------------------------------------
+
+void Top(): { } {
+  Tokens() <EOF>
+}
+
+void Tokens(): { } {
+  <IDENT> "(" <INTLIT> "," <IDENT> "," <INTLIT> ")"
+}
+
+//- Lexical Rules -----------------------------------------------------
+
+SKIP : {
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>
+| <"/*" (~["*"])* ("*" | ~["*","/"] (~["*"])* "*")* "/">
+}
+
+TOKEN : {
+  <INTLIT    : <ZERO> | <POSDIGIT> (<DIGIT>)*>
+| <#POSDIGIT : ["1"-"9"]>
+| <#ZERO     : "0">
+| <#DIGIT    : <ZERO> | <POSDIGIT> >
+}
+
+TOKEN : {
+  <IDENT : ["a"-"z"] (["a"-"z","A"-"Z","0"-"9","_"])*>
+}
+

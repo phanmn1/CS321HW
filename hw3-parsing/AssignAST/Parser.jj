@@ -1,0 +1,94 @@
+PARSER_BEGIN(Parser)
+import ast.*;
+public class Parser {
+  public static void main(String[] args) {
+     new Parser(System.in);
+     try {
+       Expr e = Top();
+       new IndentOutput(System.out).indent(e);
+     } catch (ParseException e) {
+       System.out.println("Invalid syntax at ("
+                          + token.beginColumn + ","
+                          + token.beginLine + "), "
+                          + token.image);
+     } catch (TokenMgrError e) {
+       System.out.println(e.getMessage());
+     }
+  }
+}
+PARSER_END(Parser)
+
+//- Parser Functions --------------------------------------------------
+
+Expr Top(): { Expr e; } {
+  e=Assign() <EOF> { return e; }
+}
+
+Expr Assign(): {Expr n; Token t; } {
+LOOKAHEAD(2)
+  t=<IDENT> "=" n=Assign() { return new Assign(t.image,n);} 
+  | n=Expr() {return n;} 
+}
+
+Expr Expr(): { Expr n,m; } {
+  n=OR() ("||" m=Expr() { n= new LOr(n,m);})? 
+  {return n;} 
+}
+
+Expr OR () : {Expr n,m; } {
+  n=AND () ( "&&" m=OR() {n = new LAnd(n,m);})?
+  {return n;}  
+}
+
+Expr AND() : {Expr n,m; } {
+  n=COMPARE() ( ("<"  m=COMPARE() { n=new Lt(n,m);}) 
+	       |("<=" m=COMPARE() { n=new Lte(n,m);}) 
+	       |(">"  m=COMPARE() { n=new Gt(n,m);}) 
+	       |(">=" m=COMPARE() { n=new Gte(n,m);}) 
+	       |("==" m=COMPARE() { n=new Eql(n,m);} )
+	       |("!=" m=COMPARE() { n=new Neq(n,m);}))?  
+  {return n;} 
+}
+
+Expr COMPARE() : {Expr n,m;} {
+  n=ADDSUB () ( ("+" m=ADDSUB() { n = new Add(n,m);} ) 
+               |("-" m=ADDSUB() { n = new Sub(n,m);}))*
+ {return n;}
+}
+
+Expr ADDSUB() : {Expr n,m; } {
+  n=MULTDIV() ( ("*" m=MULTDIV() { n = new Mul(n,m);}) 
+             |("/" m=MULTDIV() { n = new Div(n,m);}))*
+  {return n;}  
+} 
+
+Expr MULTDIV () : {Expr n; Token t;} {
+   "(" n=Expr() ")" {return n;} 
+   |t=<INTLIT>  {return new IntLit(Integer.parseInt(t.image));} 
+   |t=<IDENT>  {return new Id(t.image); }
+}
+
+
+//- Lexical Rules -----------------------------------------------------
+
+SKIP : {
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>
+| <"/*" (~["*"])* ("*" | ~["*","/"] (~["*"])* "*")* "/">
+}
+
+TOKEN : {
+  <INTLIT    : <ZERO> | <POSDIGIT> (<DIGIT>)*>
+| <#POSDIGIT : ["1"-"9"]>
+| <#ZERO     : "0">
+| <#DIGIT    : <ZERO> | <POSDIGIT> >
+}
+
+TOKEN : {
+  <IDENT : ["a"-"z"] (["a"-"z","A"-"Z","0"-"9","_"])*>
+}
+
+

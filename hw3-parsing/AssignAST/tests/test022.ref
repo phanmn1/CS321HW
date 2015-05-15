@@ -1,0 +1,5 @@
+Assign
+  "i"
+  Add
+    Id("i")
+    IntLit(2)

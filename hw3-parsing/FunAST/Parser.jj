@@ -1,0 +1,238 @@
+//Minh Phan 
+//CS 321 
+//Homework 3 
+
+
+PARSER_BEGIN(Parser)
+import ast.*;
+public class Parser {
+  public static void main(String[] args) {
+     new Parser(System.in);
+     try {
+       Defn[] program = Top();
+       new IndentOutput(System.out).indent(program);
+     } catch (ParseException e) {
+       System.out.println("Invalid syntax at ("
+                          + token.beginColumn + ","
+                          + token.beginLine + "), "
+                          + token.image);
+     } catch (TokenMgrError e) {
+       System.out.println(e.getMessage());
+     }
+  }
+}
+PARSER_END(Parser)
+
+//- Parser Functions --------------------------------------------------
+
+Defn[] Top(): { Defn[] program; } {
+  program=Program(0) <EOF>
+  { return program; }
+}
+
+Defn[] Program(int soFar): { Defn d; Defn[] program; } {
+  ( d=Defn() program=Program(soFar+1)
+    { program[soFar] = d; return program; }
+  | { return new Defn[soFar]; })
+}
+
+Defn Defn(): {Defn d,e;  } {
+//GLOBAL VARIABLE AND FUNCTION DEFINITIONS 
+LOOKAHEAD(3) 
+ d=GlobalVarDecal() {return d;}  |
+ d=Funct()  
+ {return d;} 
+
+  
+}
+
+//Function defnitions 
+Defn Funct (): {Type t; String name; Formal [] formals; Stmt body; } {
+t=retType() name=name() "(" formals=formals(0) ")" body=Block() 
+{return new Function (t, name, formals, body); } 
+}
+
+//Function call list
+StmtExpr FunctCall ():  {Token t; Expr [] e; } {
+ t=<IDENT> "(" e=ExpArray(0) ")" {return new Call(t.image,e); } 
+}
+
+
+//Variable declarations 
+Defn GlobalVarDecal() : { Type t; VarIntro [] intros; Stmt s;   } { 
+ t = Type() intros=VarIntros(0) ";"  {return new Globals(t, intros);} 
+}
+
+//Return types
+Type retType() : {Type t; } {
+"void" {return null;}  | t=Type() { return t; } 
+}
+
+String name(): {Token t;} {
+t=<IDENT> {return t.image; } 
+}
+
+//array expr so for function calls
+Expr [] ExpArray (int soFar) : {Expr s; Expr [] array;} {
+   (s=Expr() [","] array=ExpArray(soFar+1)
+  { array[soFar]=s; return array; } 
+  | {return new Expr[soFar]; } )  
+}
+
+
+//Formal parameter array 
+Formal[] formals(int soFar): {Formal f; Formal [] list; } {
+ (f=formalList() [","] list=formals(soFar+1) 
+ { list[soFar]=f; return list; } 
+ | {return new Formal[soFar];}) 
+}
+
+//Formal argument parameters 
+Formal formalList (): {Type t; Token r; } {
+  t=Type() r=<IDENT> {return new Formal(t, r.image);} 
+} 
+
+//Statement block grammar 
+Stmt Stmt(): {Stmt s, t=null ; Expr n = null; Type p; String name; StmtExpr x;   } {
+ s=Block() { return s; }
+  | "if" "(" n=Assign() ")" s=Stmt() 
+		(LOOKAHEAD(1) "else" t=Stmt())?  {return new If (n,s,t);}
+  | "while" "(" n=Assign() ")"   s=Stmt() { return new While(n,s);} 
+  | "print" n=Assign() ";" {return new Print(n);} 
+  | "return" [ n=Assign()] ";" {return new Return(n);} 
+  | ";" {return new Empty(); }  
+  | x = StmtExpr() ";" {return new ExprStmt(x); }
+  | s = Locals() ";" {return s;}  
+}
+
+Stmt Block(): { Stmt[] stmts; } {
+  "{" stmts=Stmts(0) "}"
+  { return new Block(stmts); }
+}
+
+//intros is array of varIntros 
+Stmt Locals () : { Type t; VarIntro [] intros; Stmt s;   } {
+ t = Type() intros=VarIntros(0)  {return new Locals(t, intros);} 
+}
+
+
+InitVarIntro InitVarIntro() : {Expr e; Token t;  } {
+  t= <IDENT>  e=Assign() {return new InitVarIntro(t.image,e);} 
+}
+
+VarIntro VarIntro() : {Token t; Expr e, n; VarIntro v; } {
+LOOKAHEAD(4) 
+  t = <IDENT> "=" e=Expr() {return new InitVarIntro(t.image,e);}  |
+  t = <IDENT> {return new VarIntro(t.image);} 
+}
+
+
+//array of var intros for local var decals 
+VarIntro [] VarIntros(int soFar) : {VarIntro s; VarIntro [] vars; } {
+LOOKAHEAD(2) 
+  s=VarIntro() [","] vars=VarIntros(soFar+1) 
+  { vars[soFar] = s ; return vars; } 
+ |{ return new VarIntro[soFar]; } 
+}
+
+//create array of statments for block 
+Stmt[] Stmts(int soFar): { Stmt s; Stmt[] stmts; } {
+  (s=Stmt() stmts=Stmts(soFar+1)
+    { stmts[soFar]=s; return stmts; }
+  | { return new Stmt[soFar]; })
+}
+
+
+//Return types of boolean or ints 
+Type Type(): { } {
+  ( "int"     { return Type.INT; }
+  | "boolean" { return Type.BOOLEAN; })
+}
+
+
+//StmtExpr is expression used in statement 
+//ExprStmt is statement that contains expression 
+
+//Assignment in stmtExpr cast 
+StmtExpr StmtExpr() : {Expr e; Token t; } {
+t = <IDENT> ( LOOKAHEAD(2) "=" e=Assign() {return new Assign(t.image,e);})+ 
+}
+
+
+//Assignment Expr used in stmt and exprs 
+Expr Assign(): {Expr n; Token t; } {
+LOOKAHEAD(2)
+  t=<IDENT> "=" n=Assign() { return new Assign(t.image,n);} 
+  | n=Expr() {return n;} 
+}
+
+//------------------Expr cascade ---------------------
+Expr Expr(): { Expr n,m; } {
+  n=OR() ("||" m=Expr() { n= new LOr(n,m);})? 
+  {return n;} 
+}
+
+Expr OR () : {Expr n,m; } {
+  n=AND () ( "&&" m=OR() {n = new LAnd(n,m);})?
+  {return n;}  
+}
+
+Expr AND() : {Expr n,m; } {
+  n=COMPARE() ( ("<"  m=COMPARE() { n=new Lt(n,m);}) 
+	       |("<=" m=COMPARE() { n=new Lte(n,m);}) 
+	       |(">"  m=COMPARE() { n=new Gt(n,m);}) 
+	       |(">=" m=COMPARE() { n=new Gte(n,m);}) 
+	       |("==" m=COMPARE() { n=new Eql(n,m);} )
+	       |("!=" m=COMPARE() { n=new Neq(n,m);}))?  
+  {return n;} 
+}
+
+Expr COMPARE() : {Expr n,m;} {
+  n=ADDSUB () ( ("+" m=ADDSUB() { n = new Add(n,m);} ) 
+               |("-" m=ADDSUB() { n = new Sub(n,m);}))*
+ {return n;}
+}
+
+Expr ADDSUB() : {Expr n,m; } {
+  n=MULTDIV() ( ("*" m=MULTDIV() { n = new Mul(n,m);}) 
+             |("/" m=MULTDIV() { n = new Div(n,m);}))*
+  {return n;}  
+} 
+
+Expr MULTDIV () : {Expr n; Token t; StmtExpr e; } {
+LOOKAHEAD(2) //lookahead to see if identifier or function call 
+   e=FunctCall() {return e;} 
+   | "(" n=Assign() ")" {return n;} 
+   | n=I() {return n;} 
+}
+
+Expr I() : {Expr e; Token t; } {
+   t=<INTLIT>  {return new IntLit(Integer.parseInt(t.image));} 
+   |t=<IDENT>  {return new Id(t.image); }
+
+}
+
+
+//- Lexical Rules -----------------------------------------------------
+
+SKIP : {
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>
+| <"/*" (~["*"])* ("*" | ~["*","/"] (~["*"])* "*")* "/">
+}
+
+TOKEN : {
+  <INTLIT    : <ZERO> | <POSDIGIT> (<DIGIT>)*>
+| <#POSDIGIT : ["1"-"9"]>
+| <#ZERO     : "0">
+| <#DIGIT    : <ZERO> | <POSDIGIT> >
+}
+
+TOKEN : {
+  <IDENT : (["a"-"z"] | ["A" - "Z"]) (["a"-"z","A"-"Z","0"-"9","_"])*>
+}
+
+

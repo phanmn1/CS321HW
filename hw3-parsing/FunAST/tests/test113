@@ -1,0 +1,21 @@
+// a variation of test 112. shouldn't allow a '.' in a var name.
+int count = 0;
+boolean y=2,z=3,a,y;
+boolean y=2,z,e,y, Int, Boolean, Float, float,Integer.parsleyInt;
+int fact(int n) {
+  count = count + 1;
+  if (n<1)
+    return 1;
+  else
+    return n * fact(n-1);
+}
+
+int x = y;
+int y = 1;
+
+void main() {
+  print fact(7);
+  print fact(3);
+  print fact(count);
+}
+

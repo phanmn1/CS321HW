@@ -1,0 +1,23 @@
+LOr
+  Lt
+    Id("a")
+    Id("b")
+  LOr
+    Gt
+      Id("a")
+      Id("b")
+    LOr
+      Eql
+        Id("a")
+        Id("b")
+      LOr
+        Neq
+          Id("a")
+          Id("b")
+        LOr
+          Gte
+            Id("a")
+            Id("b")
+          Lte
+            Id("a")
+            Id("b")

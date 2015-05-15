@@ -1,0 +1,17 @@
+If
+  Lt
+    Id("x")
+    Id("y")
+  Block
+    If
+      Lt
+        Id("u")
+        Id("v")
+      Print
+        IntLit(1)
+      Block
+        Print
+          IntLit(2)
+  Block
+    Print
+      IntLit(3)

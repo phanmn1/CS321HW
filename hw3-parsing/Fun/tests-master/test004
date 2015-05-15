@@ -1,0 +1,10 @@
+// Slightly larger test to produce an AST
+int global = foo();
+
+int foo(int num, boolean hah)
+{
+   ;
+   print test(blah, blah, blah);
+
+   return foo(num);
+}

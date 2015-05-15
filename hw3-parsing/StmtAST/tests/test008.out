@@ -1,0 +1,6 @@
+ExprStmt
+  Assign
+    "y"
+    Add
+      Id("x")
+      IntLit(1)

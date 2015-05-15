@@ -1,0 +1,8 @@
+Return
+  Add
+    Mul
+      Id("x")
+      Id("x")
+    Mul
+      Id("y")
+      Id("y")

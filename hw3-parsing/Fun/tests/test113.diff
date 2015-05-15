@@ -1,0 +1,4 @@
+1c1
+< Lexical error at line 4, column 54.  Encountered: "." (46), after : ""
+---
+> Lexical error at line 4, column 20.  Encountered: "I" (73), after : ""

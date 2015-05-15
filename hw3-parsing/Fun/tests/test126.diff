@@ -1,0 +1,4 @@
+1c1
+< Invalid syntax at (8,3), x
+---
+> Invalid syntax at (14,1), n

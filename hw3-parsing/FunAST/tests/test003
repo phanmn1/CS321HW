@@ -1,0 +1,6 @@
+// Another basic test that should generate an AST
+int foo(int num, boolean hah)
+{
+   ;
+   print test(blah, blah, blah);
+}

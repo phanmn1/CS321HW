@@ -1,0 +1,13 @@
+Function
+  int
+  "foo"
+  Formal
+    int
+    "num"
+  Formal
+    boolean
+    "hah"
+  Block
+    Empty
+    Print
+      Id("hah")

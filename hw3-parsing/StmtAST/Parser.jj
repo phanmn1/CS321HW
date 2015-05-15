@@ -1,0 +1,167 @@
+//options { DEBUG_PARSER=true; }  /* Show debugging info */
+
+PARSER_BEGIN(Parser)
+import ast.*;
+public class Parser {
+  public static void main(String[] args) {
+     new Parser(System.in);
+     try {
+       Stmt s = Top();
+       new IndentOutput(System.out).indent(s);
+     } catch (ParseException e) {
+       System.out.println("Invalid syntax at ("
+                          + token.beginColumn + ","
+                          + token.beginLine + "), "
+                          + token.image);
+     } catch (TokenMgrError e) {
+       System.out.println(e.getMessage());
+     }
+  }
+}
+PARSER_END(Parser)
+
+//- Parser Functions --------------------------------------------------
+
+Stmt Top(): { Stmt s; } {
+  s=Stmt() <EOF> { return s; }
+}
+
+Stmt Stmt(): {Stmt s, t=null ; Expr n = null, m= null; Type p; String name; StmtExpr x;   } {
+ s=Block() { return s; }
+  | "if" "(" n=Assign() ")" s=Stmt() 
+		(LOOKAHEAD(1) "else" t=Stmt())?  {return new If (n,s,t);}
+  | "while" "(" n=Assign() ")"   s=Stmt() { return new While(n,s);} 
+  | "print" n=Assign() ";" {return new Print(n);} 
+  | "return" [ n=Assign()] ";" {return new Return(n);} 
+  | ";" {return new Empty(); }  
+  | x = StmtExpr() ";" {return new ExprStmt(x); }
+  | s = Locals() ";" {return s;} 
+ // | p=Type() n=VarIntros() ("," Assign())* ";" { return new Locals (p, vars) ;} 
+ //Type() Assign() ("," I() ["=" Assign()])* ";"
+ 
+}
+
+Stmt Block(): { Stmt[] stmts; } {
+  "{" stmts=Stmts(0) "}"
+  { return new Block(stmts); }
+}
+
+//intros is array of varIntros 
+Stmt Locals () : { Type t; VarIntro [] intros; Stmt s;   } {
+ t = Type() intros=VarIntros(0)  {return new Locals(t, intros);} 
+}
+
+InitVarIntro InitVarIntro() : {Expr e; Token t;  } {
+  t= <IDENT>  e=Assign() {return new InitVarIntro(t.image,e);} 
+}
+
+VarIntro VarIntro() : {Token t; Expr e, n; VarIntro v; } {
+LOOKAHEAD(4) 
+  t = <IDENT> "=" e=Expr() {return new InitVarIntro(t.image,e);}  |
+  t = <IDENT> {return new VarIntro(t.image);} 
+  //"," v=VarIntro2()  {return v;} 
+}
+
+VarIntro VarIntro2() : {Token t; Expr e; } {
+LOOKAHEAD(2) 
+    t=<IDENT> "=" e=Expr() {return new InitVarIntro(t.image,e);} |  
+   t=<IDENT>  {return new VarIntro(t.image);} 
+       
+}
+
+VarIntro [] VarIntros(int soFar) : {VarIntro s; VarIntro [] vars; } {
+LOOKAHEAD(2)
+  s=VarIntro() [","] vars=VarIntros(soFar+1) 
+  { vars[soFar] = s ; return vars; } 
+ |{ return new VarIntro[soFar]; } 
+// |";" {return new VarIntro[soFar];}  
+}
+
+
+Stmt[] Stmts(int soFar): { Stmt s; Stmt[] stmts; } {
+  (s=Stmt() stmts=Stmts(soFar+1)
+    { stmts[soFar]=s; return stmts; }
+  | { return new Stmt[soFar]; })
+}
+
+
+
+Type Type(): { } {
+  ( "int"     { return Type.INT; }
+  | "boolean" { return Type.BOOLEAN; })
+}
+//StmtExpr is expression used in statement 
+//ExprStmt is statement that contains expression 
+
+StmtExpr StmtExpr() : {Expr e; Token t; } {
+t = <IDENT> ( LOOKAHEAD(2) "=" e=Assign() {return new Assign(t.image,e);})+ 
+}
+
+Expr Assign(): {Expr n; Token t; } {
+LOOKAHEAD(2)
+  t=<IDENT> "=" n=Assign() { return new Assign(t.image,n);} 
+  | n=Expr() {return n;} 
+}
+
+Expr Expr(): { Expr n,m; } {
+  n=OR() ("||" m=Expr() { n= new LOr(n,m);})? 
+  {return n;} 
+}
+
+Expr OR () : {Expr n,m; } {
+  n=AND () ( "&&" m=OR() {n = new LAnd(n,m);})?
+  {return n;}  
+}
+
+Expr AND() : {Expr n,m; } {
+  n=COMPARE() ( ("<"  m=COMPARE() { n=new Lt(n,m);}) 
+	       |("<=" m=COMPARE() { n=new Lte(n,m);}) 
+	       |(">"  m=COMPARE() { n=new Gt(n,m);}) 
+	       |(">=" m=COMPARE() { n=new Gte(n,m);}) 
+	       |("==" m=COMPARE() { n=new Eql(n,m);} )
+	       |("!=" m=COMPARE() { n=new Neq(n,m);}))?  
+  {return n;} 
+}
+
+Expr COMPARE() : {Expr n,m;} {
+  n=ADDSUB () ( ("+" m=ADDSUB() { n = new Add(n,m);} ) 
+               |("-" m=ADDSUB() { n = new Sub(n,m);}))*
+ {return n;}
+}
+
+Expr ADDSUB() : {Expr n,m; } {
+  n=MULTDIV() ( ("*" m=MULTDIV() { n = new Mul(n,m);}) 
+             |("/" m=MULTDIV() { n = new Div(n,m);}))*
+  {return n;}  
+} 
+
+Expr MULTDIV () : {Expr n; Token t;} {
+   "(" n=Assign() ")" {return n;} 
+   |t=<INTLIT>  {return new IntLit(Integer.parseInt(t.image));} 
+   |t=<IDENT>  {return new Id(t.image); }
+}
+
+
+//- Lexical Rules -----------------------------------------------------
+
+SKIP : {
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>
+| <"/*" (~["*"])* ("*" | ~["*","/"] (~["*"])* "*")* "/">
+}
+
+TOKEN : {
+  <INTLIT    : <ZERO> | <POSDIGIT> (<DIGIT>)*>
+| <#POSDIGIT : ["1"-"9"]>
+| <#ZERO     : "0">
+| <#DIGIT    : <ZERO> | <POSDIGIT> >
+}
+
+TOKEN : {
+  <IDENT : ["a"-"z"] (["a"-"z","A"-"Z","0"-"9","_"])*>
+}
+
+

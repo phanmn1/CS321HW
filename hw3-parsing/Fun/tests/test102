@@ -1,0 +1,23 @@
+// we're not allowed to have underlines
+// or other special characters but the 
+// underline was the only one int the
+// lexical rules from lab....
+int count_fail = 0;
+
+int fact(int n) {
+  count = count + 1;
+  if (n<1)
+    return 1;
+  else
+    return n * fact(n-1);
+}
+
+int x = y;
+int y = 1;
+
+void main() {
+  print fact(7);
+  print fact(3);
+  print fact(count);
+}
+

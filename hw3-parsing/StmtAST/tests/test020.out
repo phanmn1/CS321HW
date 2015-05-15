@@ -1,0 +1,9 @@
+Block
+  ExprStmt
+    Assign
+      "x"
+      Id("y")
+  ExprStmt
+    Assign
+      "a"
+      Id("b")

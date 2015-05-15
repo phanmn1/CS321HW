@@ -1,0 +1,23 @@
+int count = 0;
+
+int fact(,int n) {
+// this  ^^ comma should cause some problems
+// I noticed a logical problem with my program when it came to commas
+// as I was going through and adding comments so there are quite a 
+// few tests coming up with commas in weird places.
+  count = count + 1;
+  if (n<1)
+    return 1;
+  else
+    return n * fact(n-1);
+}
+
+int x = y;
+int y = 1;
+
+void main() {
+  print fact(7);
+  print fact(3);
+  print fact(count);
+}
+

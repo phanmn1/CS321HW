@@ -1,0 +1,8 @@
+If
+  Lt
+    Id("x")
+    Id("y")
+  Print
+    IntLit(1)
+  Print
+    IntLit(2)

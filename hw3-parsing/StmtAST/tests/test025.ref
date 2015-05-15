@@ -1,0 +1,5 @@
+Locals
+  boolean
+  InitVarIntro
+    "x"
+    Id("y")

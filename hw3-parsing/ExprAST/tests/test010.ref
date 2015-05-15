@@ -1,0 +1,11 @@
+Add
+  Sub
+    Mul
+      IntLit(4)
+      IntLit(5)
+    Div
+      Mul
+        IntLit(6)
+        IntLit(7)
+      IntLit(3)
+  IntLit(4)

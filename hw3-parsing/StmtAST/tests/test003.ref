@@ -1,0 +1,6 @@
+Print
+  Add
+    IntLit(1)
+    Mul
+      Id("x")
+      Id("y")

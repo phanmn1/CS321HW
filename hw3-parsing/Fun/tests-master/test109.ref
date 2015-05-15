@@ -1,0 +1,81 @@
+Globals
+  int
+  InitVarIntro
+    "count"
+    IntLit(0)
+Globals
+  boolean
+  InitVarIntro
+    "y"
+    IntLit(2)
+  InitVarIntro
+    "z"
+    IntLit(3)
+  VarIntro
+    "a"
+  VarIntro
+    "y"
+Globals
+  boolean
+  InitVarIntro
+    "y"
+    IntLit(2)
+  VarIntro
+    "z"
+  VarIntro
+    "e"
+  VarIntro
+    "y"
+Function
+  int
+  "fact"
+  Formal
+    int
+    "n"
+  Block
+    ExprStmt
+      Assign
+        "count"
+        Add
+          Id("count")
+          IntLit(1)
+    If
+      Lt
+        Id("n")
+        IntLit(1)
+      Return
+        IntLit(1)
+      Return
+        Mul
+          Id("n")
+          Call
+            "fact"
+            Sub
+              Id("n")
+              IntLit(1)
+Globals
+  int
+  InitVarIntro
+    "x"
+    Id("y")
+Globals
+  int
+  InitVarIntro
+    "y"
+    IntLit(1)
+Function
+  void
+  "main"
+  Block
+    Print
+      Call
+        "fact"
+        IntLit(7)
+    Print
+      Call
+        "fact"
+        IntLit(3)
+    Print
+      Call
+        "fact"
+        Id("count")

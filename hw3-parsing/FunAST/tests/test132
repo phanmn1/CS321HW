@@ -1,0 +1,7 @@
+// These are some examples of things that should pass the professor
+// posted in response to a question on d2l
+int main(){
+hello(1+2, 3 && b); 
+//or 
+f(g(x,y));
+}

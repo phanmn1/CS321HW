@@ -1,0 +1,14 @@
+If
+  Lt
+    Id("x")
+    Id("y")
+  Block
+    If
+      Gt
+        Id("u")
+        Id("v")
+      Print
+        IntLit(19)
+    [no else branch]
+  Print
+    IntLit(17)

@@ -1,0 +1,66 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * test007                                                                     *
+ *                                                                             *
+ * Let's make change!                                                          *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+int main()
+{
+  // Test function
+  if(greedy(27) != 3)
+  {
+    // Technically, "uhhhhh" is an identifier, since we don't have string
+    // literals (or strings, for that matter).
+    print uhhhhh;
+    return 1;
+  }
+
+  return 0;
+}
+
+/*
+ * int greedy(int target)
+ *
+ * Returns the minimal number of coins required to create the given value (in
+ * cents), with quarters as the largest denomination.
+ *
+ * Returns 0 if target is negative. This will never happen, we don't support
+ * negative numbers.
+ */
+
+int greedy(int target)
+{
+  if(target < 0)
+  {
+    return 0;
+  }
+
+  int coinCount = 0;
+
+  while(target >= 25)
+  {
+    target = target - 25;
+    coinCount = coinCount + 1;
+  }
+
+  while(target >= 10)
+  {
+    target = target - 10;
+    coinCount = coinCount + 1;
+  }
+
+  while(target >= 5)
+  {
+    target = target - 5;
+    coinCount = coinCount + 1;
+  }
+
+  while(target >= 1)
+  {
+    target = target - 1;
+    coinCount = coinCount + 1;
+  }
+
+  return coinCount;
+}

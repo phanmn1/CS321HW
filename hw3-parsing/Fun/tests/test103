@@ -1,0 +1,22 @@
+// the first character of a variable name is
+// allowed to be uppercase
+int count = 0;
+
+int fact(int n) {
+  Count = count + 1;
+//^
+  if (n<1)
+    return 1;
+  else
+    return n * fact(n-1);
+}
+
+int x = y;
+int y = 1;
+
+void main() {
+  print fact(7);
+  print fact(3);
+  print fact(count);
+}
+

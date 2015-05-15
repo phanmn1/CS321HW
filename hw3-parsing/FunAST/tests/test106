@@ -1,0 +1,23 @@
+// var names with numbers after the first char allowed
+// note that the paramters to funtion calls can be anything 
+// already so .... thats not really testing anything its just
+// gibberish
+int c2ount = 0;
+
+int fact(int n1) {
+  count = c2o4u5sfnt + 1;
+  if (n124<1)
+    return 1;
+  else
+    return n999 * fact(n666-1);
+}
+
+int x = y4;
+int y = 1;
+
+void main() {
+  print fact(7);
+  print fact(3);
+  print fact(count);
+}
+

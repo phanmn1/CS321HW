@@ -1,0 +1,21 @@
+int count = 0;
+
+int fact(int n, boolean y,) {
+// this time we have commas gone wild in a formal
+// parameter list
+  count = count + 1;
+  if (n<1)
+    return 1;
+  else
+    return n * fact(n-1);
+}
+
+int x = y;
+int y = 1;
+
+void main() {
+  print fact(7);
+  print fact(3);
+  print fact(count);
+}
+

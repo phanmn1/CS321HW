@@ -1,0 +1,7 @@
+Lt
+  Add
+    Id("a")
+    IntLit(1)
+  Sub
+    Id("b")
+    IntLit(2)

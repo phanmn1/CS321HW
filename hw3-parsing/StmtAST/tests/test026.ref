@@ -1,0 +1,12 @@
+Locals
+  int
+  VarIntro
+    "x"
+  InitVarIntro
+    "y"
+    Id("x")
+  VarIntro
+    "z"
+  InitVarIntro
+    "t"
+    IntLit(1)

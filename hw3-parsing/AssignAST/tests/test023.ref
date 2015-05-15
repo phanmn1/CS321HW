@@ -1,0 +1,7 @@
+Assign
+  "i"
+  Assign
+    "j"
+    Assign
+      "k"
+      IntLit(0)

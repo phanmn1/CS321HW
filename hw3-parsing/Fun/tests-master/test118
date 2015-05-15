@@ -1,0 +1,22 @@
+// here we have more comma problems
+// this time they're in the function call
+int count = 0, z=q,f,f;
+
+int fact(int n, boolean y) {
+  count = count + 1;
+  if (n<1)
+    return 1;
+  else
+    return n * fact(,n-1, z);
+// I got 99 commas ^^
+}
+
+int x = y;
+int y = 1;
+
+void main(boolean f, boolean z, int y) {
+  print fact(7,3);
+  print fact(x,6,r,parsingIsFun);
+  print fact(count,isItThough);
+}
+

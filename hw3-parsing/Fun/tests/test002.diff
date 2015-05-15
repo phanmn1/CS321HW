@@ -1,0 +1,16 @@
+1,13c1
+< Function
+<   int
+<   "foo"
+<   Formal
+<     int
+<     "num"
+<   Formal
+<     boolean
+<     "hah"
+<   Block
+<     Empty
+<     Print
+<       Id("hah")
+---
+> Invalid syntax at (13,2), num

@@ -1,0 +1,156 @@
+//options { DEBUG_PARSER=true; }  /* Show debugging info */
+
+PARSER_BEGIN(Parser)
+
+public class Parser {
+  public static void main(String[] args) {
+     new Parser(System.in);
+     try {
+       Top();
+       System.out.println("Valid syntax");
+     } catch (ParseException e) {
+       System.out.println("Invalid syntax at ("
+                          + token.beginColumn + ","
+                          + token.beginLine + "), "
+                          + token.image);
+     } catch (TokenMgrError e) {
+       System.out.println(e.getMessage());
+     }
+  }
+}
+PARSER_END(Parser)
+
+//- Parser Functions --------------------------------------------------
+
+void Top(): { } {
+  TopDefs() <EOF>
+}
+
+void TopDefs(): { } {
+//GLOBAL VARIABLE AND FUNCTION DEFINITIONS 
+LOOKAHEAD(3) 
+Funct()  (TopDefs())? | 
+GlobalVarDecal() (TopDefs())? 
+
+ 
+}
+
+void Funct (): {} {
+retType() name() "(" formals () ")" Block() 
+}
+
+void FunctCall ():  {} {
+ <IDENT> "(" Expr() ")" 
+}
+
+void GlobalVarDecal() : {} { 
+ Type() Assign() ("," I() ["=" Assign()])* ";"
+
+}
+
+void retType() : {} {
+"void" | Type() 
+}
+
+void name(): { } {
+<IDENT> 
+}
+
+void formals(): {} {
+ (formalList())* 
+}
+
+void formalList (): {} {
+ Type() <IDENT> 
+} 
+
+void Stmt(): { } {
+  Block() 
+  | "if" "(" Assign() ")" Stmt() (LOOKAHEAD(1) "else" Stmt())?  
+  | "while" "(" Assign() ")"   Stmt() 
+  | "print" Assign() ";" 
+  | "return" [Assign()] ";" 
+  | StmtExpr() ";"  
+  | Type() Assign() ("," I() ["=" Assign()])* ";"
+  | ";" 
+}
+
+void Block(): { } {
+  "{" (Stmt())* "}" 
+}
+
+void Type(): { } {
+  "int" | "boolean"
+}
+
+void StmtExpr () : { } {
+ <IDENT> (LOOKAHEAD(2) "=" Assign())+ 
+}
+
+void Assign(): { } {
+LOOKAHEAD(2)
+  <IDENT> "=" Assign() 
+  | Expr() 
+
+}
+
+void Expr(): { } {
+  OR() ("||" Expr() )? 
+}
+
+void OR () : { } {
+  AND () ( "&&" OR() )? 
+}
+
+void AND() : { } {
+  COMPARE() (("<" COMPARE()) 
+             |("<=" COMPARE()) 
+             |(">" COMPARE())
+             |(">=" COMPARE())
+             |("==" COMPARE())
+             |("!=" COMPARE()))?   
+}
+
+
+void COMPARE() : {} {
+  ADDSUB () ( ("+" ADDSUB()) 
+             |("-" ADDSUB()))*
+}
+
+void ADDSUB() : {} {
+  MULTDIV() ( ("*" MULTDIV()) 
+             |("/" MULTDIV()))* 
+} 
+
+void MULTDIV () : {} {
+LOOKAHEAD(2) 
+  FunctCall() | "(" Assign() ")" | I() 
+}
+
+void I() : {} {
+   <INTLIT>  | <IDENT> 
+}
+
+
+//- Lexical Rules -----------------------------------------------------
+
+SKIP : {
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>
+| <"/*" (~["*"])* ("*" | ~["*","/"] (~["*"])* "*")* "/">
+}
+
+TOKEN : {
+  <INTLIT    : <ZERO> | <POSDIGIT> (<DIGIT>)*>
+| <#POSDIGIT : ["1"-"9"]>
+| <#ZERO     : "0">
+| <#DIGIT    : <ZERO> | <POSDIGIT> >
+}
+
+TOKEN : {
+  <IDENT : ["a"-"z"] (["a"-"z","A"-"Z","0"-"9","_"])*>
+}
+

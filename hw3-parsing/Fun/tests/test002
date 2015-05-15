@@ -1,0 +1,6 @@
+// a pretty basic test, should print an AST
+int foo(int num, boolean hah)
+{
+   ;
+   print hah;
+}

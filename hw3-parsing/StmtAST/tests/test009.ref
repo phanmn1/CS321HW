@@ -1,0 +1,6 @@
+ExprStmt
+  Assign
+    "x"
+    Assign
+      "y"
+      IntLit(1)

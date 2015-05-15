@@ -1,0 +1,22 @@
+// This is a 'proper' version of 123.  Should produce an AST
+int count = 0, z=q,f,f;
+
+int fact(int n, boolean y) {
+  fact(x,3,4*(x),2-3*(y),hah);
+// Now they are valid!
+  count = count + 1;
+  if (n<1)
+    return 1;
+  else
+    return n * fact(n-1, z);
+}
+
+int x = y;
+int y = 1;
+
+void main(boolean f, boolean z, int y) {
+  print fact(7,3);
+  print fact(x,6,r,parsingIsFun);
+  print fact(count,isItThough);
+}
+

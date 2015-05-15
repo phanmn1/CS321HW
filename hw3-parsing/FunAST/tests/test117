@@ -1,0 +1,21 @@
+// basic sanity check with multiple arguemnts everywhere and multiple 
+// declarations. It should produce an AST
+int count = 0, z=q,f,f;
+
+int fact(int n, boolean y) {
+  count = count + 1;
+  if (n<1)
+    return 1;
+  else
+    return n * fact(n-1, z);
+}
+
+int x = y;
+int y = 1;
+
+void main(boolean f, boolean z, int y) {
+  print fact(7,3);
+  print fact(x,6,r,parsingIsFun);
+  print fact(count,isItThough);
+}
+
